@@ -16,7 +16,7 @@ Em desenvolvimento.
 
 **Text-Embedding-3-Small**: Modelo de geração de embeddings de texto desenvolvido pela OpenAI, responsável por transformar textos em vetores numéricos que representam seu significado semântico. Esses vetores são fundamentais para a implementação de sistemas RAG, permitindo a realização de buscas semânticas eficientes e a recuperação de informações relevantes a partir de uma base de conhecimento.
 ## Fluxograma
-
+### Chatbot
 ![Chatbot](docs/Chatbot-Fluxo.png)
     
 
