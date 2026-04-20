@@ -9,7 +9,6 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.memory import ConversationBufferMemory
 import redis
 import json
 
@@ -76,7 +75,7 @@ def main(key, question):
     # Retorna resposta do chatbot juntamente com as fontes utilizadas.
     response_text = model.invoke(prompt)
     sources = list(set([doc.metadata.get("source", None) for doc, _score in results]))
-    redis_save_history(key, query_text, response_text.content)
+    redis_save_history(key, question, response_text.content)
     return (f"{response_text.content} \n Fontes: \n{sources}")
 
 if __name__ == "__main__":
@@ -86,4 +85,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    return main(key=args.user_key, question=args.question)
+    result = main(key=args.user_key, question=args.question)
+    print(result)
