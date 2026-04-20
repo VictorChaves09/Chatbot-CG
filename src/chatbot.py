@@ -2,6 +2,7 @@
 
 import os
 
+import argparse
 import openai
 from dotenv import load_dotenv
 from langchain_chroma import Chroma
@@ -43,7 +44,7 @@ def redis_load_history(key):
 
     return "\n\n".join(texts)
 
-def main(question, key):  
+def main(key, question):  
     """ 
     Checa se chave do usuário existe. Se sim, recupera histórico de conversas e envia juntamente com input para o agente de IA.
     O agente é responsável por analisar o input e o histórico e resumir em um input o que o usuário deseja.
@@ -55,7 +56,6 @@ def main(question, key):
         model = ChatOpenAI(model="gpt-4o-mini")
         response_text = model.invoke(prompt)
         query_text = response_text.content
-        print(f"Input resumido pelo agente: \n{query_text}")
     else:
         query_text = question
 
@@ -65,8 +65,7 @@ def main(question, key):
     # Busca informações com base na similaridade com o assunto da pergunta no banco de dados.
     results = db.similarity_search_with_score(query_text, k=5)
     if len(results) == 0 or results[0][1] < 0.5:
-        print("Lamento, não possuo informações sobre esse assunto.")
-        return
+        return "Lamento, não possuo informações sobre esse assunto."
 
     # Cria o texto com o contexto a ser usado com base nas informações retornadas.
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
@@ -74,14 +73,17 @@ def main(question, key):
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
     model = ChatOpenAI(model="gpt-4o-mini")
+    # Retorna resposta do chatbot juntamente com as fontes utilizadas.
     response_text = model.invoke(prompt)
-    # Imprime resposta retornada juntamente com as fontes utilizadas.
-    print(f" Resposta do agente: \n{response_text.content}")
-    sources = [doc.metadata.get("source", None) for doc, _score in results]
-    print(f"Fontes: \n{sources}")
+    sources = list(set([doc.metadata.get("source", None) for doc, _score in results]))
     redis_save_history(key, query_text, response_text.content)
+    return (f"{response_text.content} \n Fontes: \n{sources}")
 
 if __name__ == "__main__":
-    key = ""
-    question = input("Digite sua pergunta: ")
-    main(question, key)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("user_key")
+    parser.add_argument("question")
+
+    args = parser.parse_args()
+
+    return main(key=args.user_key, question=args.question)
