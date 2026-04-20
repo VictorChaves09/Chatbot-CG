@@ -14,7 +14,7 @@ Desenvolver um chatbot que utiliza material selecionado para auxiliar alunos dur
 ---
 
 ## 📈 Status Atual do Projeto
-- **Status atual:** Em andamento  
+- **Status atual:** Finalizado
 ---
 
 ## 👥 Equipe
